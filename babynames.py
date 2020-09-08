@@ -30,6 +30,7 @@ Suggested milestones for incremental development:
  - Build the [year, 'name rank', ... ] list and print it
  - Fix main() to use the extracted_names list
 """
+__author__ = "Shanquel Scott doing in study group with Gabby and Sondos"
 
 import sys
 import re
@@ -44,8 +45,28 @@ def extract_names(filename):
     ['2006', 'Aaliyah 91', 'Aaron 57', 'Abagail 895', ...]
     """
     names = []
-    # +++your code here+++
+    names_dict = {}
+    with open(filename, 'r') as f:
+        lines = f.read()
+        pattern = re.search(r'Popularity\sin\s(\d\d\d\d)', lines)
+        if not pattern:
+            print("No year found")
+            return None
+        year = pattern.group(1)
+        names.append(year)
+        names_list = re.findall(
+            r'<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>', lines)
+        for r, m, f in names_list:
+            if m not in names_dict:
+                names_dict[m] = r
+            if f not in names_dict:
+                names_dict[f] = r
+        for n in sorted(names_dict):
+            names.append(f"{n} {names_dict[n]}")
     return names
+
+
+extract_names("baby1992.html")
 
 
 def create_parser():
@@ -71,11 +92,16 @@ def main(args):
     if not ns:
         parser.print_usage()
         sys.exit(1)
-
     file_list = ns.files
-
-    # option flag
     create_summary = ns.summaryfile
+    for file in file_list:
+        result = extract_names(file)
+        text = '\n'.join(result)
+        if not create_summary:
+            print(text)
+        else:
+            with open(file + ".summary", "w") as f:
+                f.write(text)
 
     # For each filename, call `extract_names()` with that single file.
     # Format the resulting list as a vertical list (separated by newline \n).
